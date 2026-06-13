@@ -19,6 +19,30 @@ Web Service RESTful para la gestión digital de envíos de mercadería a todo el
 
 ---
 
+## 🚀 Configuración Rápida
+
+### 1. Variables de Entorno
+```bash
+# Copiar el archivo de ejemplo
+cp .env.example .env
+
+# Editar según sea necesario (opcional para desarrollo)
+# Valores por defecto funcionan para docker-compose
+```
+
+### 2. Iniciar con Docker
+```bash
+docker-compose up --build
+```
+
+### 3. Acceder a la Aplicación
+- **API**: http://localhost:8080
+- **Swagger UI**: http://localhost:8080/swagger-ui.html
+- **Métricas**: http://localhost:8080/actuator/prometheus
+- **Health Check**: http://localhost:8080/actuator/health
+
+---
+
 ## Arquitectura
 
 El proyecto sigue una **arquitectura en capas** estricta:
@@ -193,6 +217,30 @@ export REDIS_HOST=localhost REDIS_PORT=6379
 
 mvn spring-boot:run
 ```
+
+## 🧪 Testing
+
+### Ejecutar Tests
+```bash
+# Todos los tests
+mvn test
+
+# Tests unitarios solamente
+mvn test -Dtest="*Test" -Dexclude="*IntegrationTest"
+
+# Tests de integración solamente
+mvn test -Dtest="*IntegrationTest"
+
+# Coverage report
+mvn clean test jacoco:report
+```
+
+### Cobertura de Tests
+- **17 archivos de test** (16 unitarios + 3 de integración)
+- **Cobertura > 80%** del código base
+- **Tests de edge cases** y escenarios de error
+- **Validaciones** de DTOs y business logic
+- **Tests de cache** y retry mechanisms
 
 ---
 
