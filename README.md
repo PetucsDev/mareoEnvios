@@ -143,7 +143,7 @@ Las operaciones críticas tienen hasta **3 reintentos** con backoff exponencial:
 ## 🧪 Testing que incluí
 
 ### Cobertura
-- **17 archivos de test** (16 unitarios + 3 de integración)
+- **16 archivos de test** (13 unitarios + 3 de integración)
 - **+80% cobertura** del código base
 - Tests de **edge cases** y escenarios de error
 
