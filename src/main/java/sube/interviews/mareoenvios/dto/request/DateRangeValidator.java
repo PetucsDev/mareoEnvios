@@ -11,6 +11,10 @@ public class DateRangeValidator implements ConstraintValidator<ValidDateRange, S
 
     @Override
     public boolean isValid(ShippingCreateRequest request, ConstraintValidatorContext context) {
+        if (request == null) {
+            // Si el request es null, no hay nada que validar
+            return true;
+        }
         if (request.getSendDate() == null || request.getArriveDate() == null) {
             // sendDate es @NotNull y ya lo valida su propia anotación.
             // arriveDate es opcional: si no viene, no hay rango que validar.
