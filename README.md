@@ -55,13 +55,13 @@ sube.interviews.mareoenvios
 
 ## 🎯 Patrones de diseño que implementé
 
-| Patrón | Dónde lo usé | Por qué lo elegí |
-|---|---|---|
+| Patrón | Dónde lo usé | Por qué lo elegí                                    |
+|---|---|-----------------------------------------------------|
 | **Strategy** | `shipping/state/` | Cada estado maneja su propia lógica. Fácil extender |
-| **Factory** | `shipping/factory/` | Resuelve la estrategia correcta en O(1) |
-| **Template Method** | `BaseService` | Evita repetición en CRUD operations |
-| **Observer** | `event/` | Desacopla auditoría del business logic |
-| **Builder** | Entidades y DTOs | Construcción segura y legible de objetos |
+| **Factory** | `shipping/factory/` | Resuelve la estrategia correcta facilmente          |
+| **Template Method** | `BaseService` | Evita repetición en CRUD operations                 |
+| **Observer** | `event/` | Desacopla auditoría del business logic              |
+| **Builder** | Entidades y DTOs | Construcción segura y legible de objetos            |
 
 ---
 
