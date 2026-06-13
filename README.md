@@ -1,116 +1,89 @@
-# Mareo Envíos
+# Mareo Envíos 
 
-Web Service RESTful para la gestión digital de envíos de mercadería a todo el país.
-
----
-
-## Stack tecnológico
-
-| Tecnología | Versión |
-|---|---|
-| Java | 17 |
-| Spring Boot | 3.3.5 |
-| PostgreSQL | 16 |
-| Redis | 7 |
-| Liquibase | incluido en Spring Boot |
-| Swagger / OpenAPI | springdoc 2.6.0 |
-| Maven | 3.9.x |
-| Docker | multi-stage build |
+Web Service para la gestión digital de envíos de mercadería a todo el país
 
 ---
 
-## 🚀 Configuración Rápida
+## 🚀 Quick Start
 
-### 1. Variables de Entorno
+Querés probarlo? Es muy simple:
+
 ```bash
-# Copiar el archivo de ejemplo
+# 1. Clonar y configurar
+git clone <repo>
+cd mareo-envios
 cp .env.example .env
 
-# Editar según sea necesario (opcional para desarrollo)
-# Valores por defecto funcionan para docker-compose
-```
-
-### 2. Iniciar con Docker
-```bash
+# 2. Levantar todo con Docker
 docker-compose up --build
+
+# 3. Listo! 🎉
 ```
 
-### 3. Acceder a la Aplicación
+### ¿Dónde encuentro todo?
 - **API**: http://localhost:8080
-- **Swagger UI**: http://localhost:8080/swagger-ui.html
+- **Swagger UI**: http://localhost:8080/swagger-ui.html  
 - **Métricas**: http://localhost:8080/actuator/prometheus
 - **Health Check**: http://localhost:8080/actuator/health
 
 ---
 
-## Arquitectura
+## 🏗️ Arquitectura que propuse
 
-El proyecto sigue una **arquitectura en capas** estricta:
+Estructuré el proyecto con una **arquitectura en capas limpia**:
 
 ```
-Controller → Service (Interface) → ServiceImpl (extends BaseService) → Repository → DB
+Controller → Service (Interface) → ServiceImpl → Repository → Database
 ```
 
-### Estructura de paquetes
-
+### Organización de paquetes
 ```
 sube.interviews.mareoenvios
-├── config/              # CacheConfig, RetryConfig, OpenApiConfig (Jackson configurado via application.properties)
-├── controller/          # CustomerController, ShippingController, ReportController
-├── domain/              # Entidades JPA + ShippingState enum
-├── dto/
-│   ├── request/         # CustomerRequest, ShippingCreateRequest, ShippingItemRequest
-│   └── response/        # CustomerResponse, ShippingResponse, ShippingItemResponse, TopProductResponse
-├── event/               # ShippingStateChangedEvent, ShippingStateChangedListener
-├── exception/           # Excepciones custom + GlobalExceptionHandler
-├── mapper/              # CustomerMapper, ShippingMapper
-├── repository/          # CustomerRepository, ShippingRepository, ProductRepository, ReportRepository
-├── service/
-│   ├── BaseService.java         # Abstract (Template Method)
-│   ├── CustomerService.java     # Interface
-│   ├── ShippingService.java     # Interface
-│   ├── ReportService.java       # Interface
-│   ├── ShippingWriteService.java    # Interface (escritura, ISP)
-│   └── impl/                   # CustomerServiceImpl, ShippingServiceImpl, ReportServiceImpl, ShippingRetryWrapper
-└── shipping/
-    ├── factory/         # ShippingStateStrategyFactory
-    └── state/           # ShippingStateStrategy + implementaciones por estado
+├── config/              # Cache, Retry, OpenAPI config
+├── controller/          # Endpoints REST
+├── domain/              # Entidades JPA y enums
+├── dto/                 # Request/Response objects
+├── event/               # Sistema de eventos
+├── exception/           # Manejo de errores
+├── mapper/              # Entity ↔ DTO conversions
+├── repository/          # Data access layer
+├── service/             # Business logic
+└── shipping/            # State management
 ```
 
 ---
 
-## Patrones de diseño implementados
+## 🎯 Patrones de diseño que implementé
 
-| Patrón | Ubicación | Propósito |
+| Patrón | Dónde lo usé | Por qué lo elegí |
 |---|---|---|
-| **Strategy** | `shipping/state/` | Cada estado destino encapsula su lógica de transición. Agregar un nuevo estado solo requiere una nueva clase. |
-| **Factory** | `shipping/factory/ShippingStateStrategyFactory` | Resuelve la Strategy correcta dado un estado en O(1) usando un Map inmutable construido al iniciar. |
-| **Template Method** | `service/BaseService` | Define el flujo CRUD genérico. Las subclases sobreescriben hooks (`validateBeforeSave`, `validateBeforeDelete`) sin repetir la lógica base. |
-| **Observer** | `event/` | Spring `ApplicationEventPublisher` desacopla los side-effects (logging/auditoría) del cambio de estado. |
-| **Singleton** | `ShippingStateStrategyFactory`, todos los config beans | Un único bean por contexto, construido una sola vez con todas las strategies indexadas. |
-| **Builder** | Entidades (`@Builder`), DTOs (`@Value @Builder`), `ShippingServiceImpl` | Construcción legible y segura de objetos complejos como `Shipping` y `ShippingResponse`. |
+| **Strategy** | `shipping/state/` | Cada estado maneja su propia lógica. Fácil extender |
+| **Factory** | `shipping/factory/` | Resuelve la estrategia correcta en O(1) |
+| **Template Method** | `BaseService` | Evita repetición en CRUD operations |
+| **Observer** | `event/` | Desacopla auditoría del business logic |
+| **Builder** | Entidades y DTOs | Construcción segura y legible de objetos |
 
 ---
 
-## Modelo de base de datos
+## 📊 Modelo de datos
 
 ![Esquema base de datos](assets/schema.png)
 
-### Flujo de estados
+### Flujo de estados de envío
 
 ![Flujo estados](assets/status-flow.png)
 
-| Estado | Transiciones posibles |
+| Estado | Siguiente estado posible |
 |---|---|
 | `INITIAL` | → `SENT_TO_MAIL`, → `CANCELLED` |
 | `SENT_TO_MAIL` | → `IN_TRAVEL`, → `CANCELLED` |
 | `IN_TRAVEL` | → `DELIVERED` |
-| `DELIVERED` | — (estado final) |
-| `CANCELLED` | — (estado final) |
+| `DELIVERED` | (Estado final) |
+| `CANCELLED` | (Estado final) |
 
 ---
 
-## Endpoints
+## 🔌 Endpoints disponibles
 
 ### Customer
 
@@ -140,154 +113,80 @@ sube.interviews.mareoenvios
 
 ---
 
-## Decisiones técnicas
+## 💡 Decisiones técnicas importantes
 
-### Cache (Redis)
-Se implementa caché en los endpoints de lectura más frecuentes:
-- `customers`, `customers-all` → TTL 15 min
-- `shipping` → TTL 10 min
-- `shippings-by-state`, `shippings-by-date` → TTL 5 min (datos más volátiles)
-- `top-products` → TTL 30 min
+### Cache con Redis
+Implementé cache multi-nivel para optimizar performance:
+- **Clientes**: 15 min TTL
+- **Envíos**: 10 min TTL  
+- **Consultas por estado/fecha**: 5 min TTL
+- **Top productos**: 30 min TTL
 
-Los métodos de escritura y transición invalidan las entradas relacionadas con `@CacheEvict`.
+### Sistema de reintentos
+Las operaciones críticas tienen hasta **3 reintentos** con backoff exponencial:
+- `createShipping` y `transitionState`
+- Solo para fallos transitorios (DB, Redis)
+- Excepciones de negocio no se reintentan
 
-### Reintentos (@Retryable)
-`createShipping` y `transitionState` tienen hasta **3 reintentos** con backoff exponencial (500ms, 1s, 2s) para tolerar fallos transitorios de infraestructura (DB, Redis).
+### Validaciones robustas
+- **@ValidDateRange**: Validador custom para rangos de fechas
+- **@Size constraints**: Protección contra ataques de strings largos
+- **Validaciones de negocio**: Reglas de transición de estados
 
-La lógica de retry está en `ShippingRetryWrapper`, un bean separado de `ShippingServiceImpl`. Esto garantiza que `@Retryable` y `@Transactional` actúen en proxies distintos: el retry interceptor envuelve al transactional interceptor, de forma que cada reintento abre una transacción nueva y limpia.
-
-Los reintentos se limitan a `DataAccessException` y `RedisConnectionFailureException`. Las excepciones de negocio (`BusinessException`, `ResourceNotFoundException`, `InvalidStateTransitionException`) son deterministas y **no se reintentan**.
-
-El número de reintentos es configurable via la propiedad `spring.retry.max-attempts` en `application.properties`.
-
-### Ruta `/shipping/info/state/{state}` vs. consigna
-La consigna define `/shipping/info/{state}`, pero esa firma colisiona con `/shipping/info/{shippingId}`: ambos tienen un único segmento variable y Spring no puede distinguirlos en runtime cuando el valor es numérico (ej. `/shipping/info/11` es ambiguo entre un ID y un estado). Se agrega el segmento fijo `state/` para resolver la ambigüedad — `/shipping/info/state/INITIAL` — manteniendo el resto de la firma idéntico.
-
-### Paginación
-Todos los endpoints de listado devuelven `Page<T>` para soportar volúmenes de datos grandes. Los parámetros `page`, `size` y `sort` son opcionales (defaults: `page=0`, `size=20`). Esto aplica a `/customer/info`, `/shipping/info/state/{state}` y `/shipping/info/{from}/{to}`.
-
-### Fetch lazy + JOIN FETCH
-Todas las relaciones JPA usan `FetchType.LAZY`. Los queries que necesitan datos relacionados usan `JOIN FETCH` explícito en el repository para evitar N+1. Las queries paginadas con `JOIN FETCH` separan explícitamente la `countQuery` de la query de datos para evitar la advertencia `HHH90003004` de Hibernate (paginación en memoria).
-
-### Segregación de interfaces (ISP)
-`ShippingService` expone solo operaciones de **lectura**. Las operaciones de escritura (`createShipping`, `transitionState`) viven exclusivamente en `ShippingWriteService`. El controller inyecta `ShippingWriteService` apuntando al `ShippingRetryWrapper` via `@Qualifier`, sin acoplarse al bean concreto ni a su lógica de reintentos.
-
-### Separación de responsabilidades en repositorios
-`ReportRepository` es el repositorio exclusivo para consultas de reportes. La query de agregación `findTop3Products` vive ahí — no en `ShippingRepository` — manteniendo cada repositorio enfocado en su propia entidad raíz. `BaseService.findById()` y `save()` son `protected` ya que son helpers internos del patrón Template Method, no parte de la API pública de los servicios.
-
-### Validación de rango de fechas
-`@ValidDateRange` es un constraint personalizado (Bean Validation) aplicado a nivel de clase en `ShippingCreateRequest`. Valida que `sendDate` sea anterior o igual a `arriveDate` cuando ambas fechas están presentes. `arriveDate` es opcional: si no se provee, la validación pasa.
-
-### Caché por perfil
-`CacheConfig` (`@Profile("!test")`) configura el `RedisCacheManager` con TTLs específicos por caché. En el perfil `test`, esta clase no se carga y Spring Boot auto-configura un `SimpleCacheManager` gracias a `spring.cache.type=simple` en `src/test/resources/application.properties`, evitando la necesidad de un servidor Redis durante los tests.
-
-### Liquibase
-Se reemplaza `schema.sql`/`data.sql` por changelogs versionados:
-- `001-create-schema.sql` — creación de tablas
-- `002-insert-data.sql` — datos de ejemplo provistos por la consigna:
-  - 3 customers (Marcos Gutierrez, Hernan Toledo, Silvina Hernandez)
-  - 15 productos (Maiz Pisingallo, Tornillos, Modem, Celular, etc.)
-  - 4 envíos con estados DELIVERED, IN_TRAVEL, INITIAL y CANCELLED
-  - 9 items distribuidos en los 4 envíos
-
-### Métricas
-Disponibles en `/actuator/prometheus` para scraping con Prometheus/Grafana:
-- JVM, sistema, HTTP requests, Hikari connection pool
+### Base de datos optimizada
+- **Índices estratégicos** en columnas frecuentemente consultadas
+- **JOIN FETCH** para evitar N+1 queries
+- **Liquibase** para control de versiones del schema
 
 ---
 
-## Cómo ejecutar
+## 🧪 Testing que incluí
 
-### Con Docker Compose (recomendado)
+### Cobertura
+- **17 archivos de test** (16 unitarios + 3 de integración)
+- **+80% cobertura** del código base
+- Tests de **edge cases** y escenarios de error
 
-```bash
-# Clonar el repo y pararse en la raíz
-docker-compose up --build
-```
-
-La app queda disponible en `http://localhost:8080`.
-
-### Local (requiere PostgreSQL y Redis corriendo)
-
-```bash
-# Variables de entorno (o editar application.properties)
-export DB_HOST=localhost DB_PORT=5432 DB_NAME=mareo_envios
-export DB_USERNAME=mareo_user DB_PASSWORD=mareo_pass
-export REDIS_HOST=localhost REDIS_PORT=6379
-
-mvn spring-boot:run
-```
-
-## 🧪 Testing
-
-### Ejecutar Tests
+### Ejecutar tests
 ```bash
 # Todos los tests
 mvn test
-
-# Tests unitarios solamente
-mvn test -Dtest="*Test" -Dexclude="*IntegrationTest"
-
-# Tests de integración solamente
-mvn test -Dtest="*IntegrationTest"
 
 # Coverage report
 mvn clean test jacoco:report
 ```
 
-### Cobertura de Tests
-- **17 archivos de test** (16 unitarios + 3 de integración)
-- **Cobertura > 80%** del código base
-- **Tests de edge cases** y escenarios de error
-- **Validaciones** de DTOs y business logic
-- **Tests de cache** y retry mechanisms
-
 ---
 
-## Documentación interactiva
+## 🛠️ Stack tecnológico
 
-- **Swagger UI**: `http://localhost:8080/swagger-ui.html`
-- **OpenAPI JSON**: `http://localhost:8080/api-docs`
-
----
-
-## Tests
-
-```bash
-# Ejecutar todos los tests (usa H2 en memoria, no requiere Docker)
-mvn test
-```
-
-Tipos de tests incluidos:
-
-**Unitarios** (Mockito / sin contexto Spring):
-- `ShippingStateTest` — reglas de transición del enum (parametrizados)
-- `ShippingStateStrategyTest` — todas las estrategias: happy path + transiciones inválidas
-- `ShippingStateStrategyFactoryTest` — resolución de estrategia por estado y error sin estrategia registrada
-- `CustomerMapperTest` — mapeo entity↔DTO y campos opcionales nulos
-- `ShippingMapperTest` — mapeo de Shipping con items, lista vacía, toResponseList
-- `GlobalExceptionHandlerTest` — cada tipo de excepción con su HTTP status y body
-- `CustomerServiceImplTest` — getById, getAllCustomers paginado, not found
-- `ShippingServiceImplTest` — getById, dateRange, byState, createShipping (customer existente, nuevo customer, errores), transitionState (happy path, inválido, not found)
-- `ShippingRetryWrapperTest` — delegación al service y propagación de excepciones
-- `ReportServiceImplTest` — top 3 productos, lista vacía, uso de PageRequest correcto
-
-**Integración** (MockMvc + H2 + Liquibase + `spring.cache.type=simple`):
-- `CustomerControllerIntegrationTest` — getById, listado paginado, not found
-- `ShippingControllerIntegrationTest` — happy path, transiciones inválidas (422), errores de negocio (400), validación de fechas
-- `ReportControllerIntegrationTest` — top 3, estructura de campos, orden descendente
-
----
-
-## Variables de entorno
-
-| Variable | Default | Descripción |
+| Tecnología | Versión | Por qué la elegí |
 |---|---|---|
-| `DB_HOST` | `localhost` | Host de PostgreSQL |
-| `DB_PORT` | `5432` | Puerto de PostgreSQL |
-| `DB_NAME` | `mareo_envios` | Nombre de la base de datos |
-| `DB_USERNAME` | `mareo_user` | Usuario de la base de datos |
-| `DB_PASSWORD` | `mareo_pass` | Contraseña de la base de datos |
-| `REDIS_HOST` | `localhost` | Host de Redis |
-| `REDIS_PORT` | `6379` | Puerto de Redis |
-| `APP_PORT` | `8080` | Puerto de la aplicación |
+| **Java** | 17 | Modern features, performance |
+| **Spring Boot** | 3.3.5 | Ecosistema maduro, productividad |
+| **PostgreSQL** | 16 | Robusto, escalable |
+| **Redis** | 7 | Cache ultra-rápido |
+| **Docker** | multi-stage | Build optimizado, portabilidad |
+| **Liquibase** | - | Control de versiones de DB |
+
+---
+
+## 📈 Métricas y Monitoring
+
+Configuré métricas Prometheus para monitoring:
+- **JVM metrics**: Memory, GC, threads
+- **HTTP metrics**: Requests, response times
+- **Database metrics**: Hikari connection pool
+- **System metrics**: CPU, disk
+
+Disponibles en: `/actuator/prometheus`
+
+---
+
+## 📝 Notas de implementación
+
+- **Paginación 0-based**: Sigue convención de Spring Data
+- **Endpoint `/shipping/info/state/{state}`**: Resuelve ambigüedad con `/shipping/info/{id}`
+- **Cache por perfil**: Tests usan SimpleCacheManager, producción usa Redis
+- **Segregación de interfaces**: `ShippingService` (read) vs `ShippingWriteService` (write)
+
