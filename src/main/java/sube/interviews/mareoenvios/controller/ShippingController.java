@@ -3,6 +3,7 @@ package sube.interviews.mareoenvios.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -22,6 +23,7 @@ import java.time.LocalDate;
 @RestController
 @RequestMapping("/shipping")
 @Tag(name = "Shipping", description = "Operaciones sobre envíos")
+@Slf4j
 public class ShippingController {
 
     private final ShippingService shippingService;
@@ -63,8 +65,14 @@ public class ShippingController {
     @PostMapping("/create")
     @Operation(summary = "Crear una nueva solicitud de envío")
     public ResponseEntity<ShippingResponse> createShipping(@RequestBody @Valid ShippingCreateRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(shippingWriteService.createShipping(request));
+        log.info("Creating new shipping for customer ID: {} with {} items", 
+                request.getCustomerId() != null ? request.getCustomerId() : "new customer", 
+                request.getItems().size());
+        
+        ShippingResponse response = shippingWriteService.createShipping(request);
+        
+        log.info("Successfully created shipping with ID: {}", response.getId());
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     // --- Transiciones de estado ---

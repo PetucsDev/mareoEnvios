@@ -1,6 +1,7 @@
 package sube.interviews.mareoenvios.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
@@ -38,6 +39,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
+@Slf4j
 public class ShippingServiceImpl extends BaseService<Shipping, Long> implements ShippingService, ShippingWriteService {
 
     private final ShippingRepository shippingRepository;
@@ -111,13 +113,19 @@ public class ShippingServiceImpl extends BaseService<Shipping, Long> implements 
     @Transactional
     @CacheEvict(value = {"shipping", "shippings-by-state", "shippings-by-date"}, allEntries = true)
     public ShippingResponse transitionState(Long shippingId, ShippingState targetState) {
+        log.info("Starting state transition for shipping ID: {} to state: {}", shippingId, targetState);
+        
         Shipping shipping = findById(shippingId);
         ShippingState previousState = shipping.getState();
+        
+        log.debug("Current state: {} for shipping ID: {}", previousState, shippingId);
 
         // Strategy pattern: delega la transición a la estrategia correspondiente
         strategyFactory.getStrategy(targetState).apply(shipping);
 
         Shipping saved = shippingRepository.save(shipping);
+        
+        log.info("Successfully transitioned shipping ID: {} from {} to {}", shippingId, previousState, targetState);
 
         // Observer pattern: publica el evento de cambio de estado
         eventPublisher.publishEvent(
