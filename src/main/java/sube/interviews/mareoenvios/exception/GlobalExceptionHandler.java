@@ -20,16 +20,14 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleResourceNotFound(ResourceNotFoundException ex) {
-        log.warn("Resource not found - Entity: {}, ID: {}, Message: {}", 
-                ex.getEntityName(), ex.getEntityId(), ex.getMessage());
+        log.warn("Resource not found: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(buildError(HttpStatus.NOT_FOUND, ex.getMessage()));
     }
 
     @ExceptionHandler(InvalidStateTransitionException.class)
     public ResponseEntity<ErrorResponse> handleInvalidTransition(InvalidStateTransitionException ex) {
-        log.warn("Invalid state transition - Shipping ID: {}, Current State: {}, Target State: {}, Message: {}", 
-                ex.getShippingId(), ex.getCurrentState(), ex.getTargetState(), ex.getMessage());
+        log.warn("Invalid state transition: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
                 .body(buildError(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage()));
     }
