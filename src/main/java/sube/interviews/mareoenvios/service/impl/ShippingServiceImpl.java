@@ -13,6 +13,7 @@ import sube.interviews.mareoenvios.domain.*;
 import sube.interviews.mareoenvios.dto.request.ShippingCreateRequest;
 import sube.interviews.mareoenvios.dto.request.ShippingItemRequest;
 import sube.interviews.mareoenvios.dto.response.ShippingResponse;
+import sube.interviews.mareoenvios.dto.response.PagedResponse;
 import sube.interviews.mareoenvios.event.ShippingStateChangedEvent;
 import sube.interviews.mareoenvios.exception.BusinessException;
 import sube.interviews.mareoenvios.exception.ResourceNotFoundException;
@@ -67,16 +68,18 @@ public class ShippingServiceImpl extends BaseService<Shipping, Long> implements 
 
     @Override
     @Cacheable(value = "shippings-by-date", key = "#from.toString() + '-' + #to.toString() + '-' + #pageable.pageNumber + '-' + #pageable.pageSize")
-    public Page<ShippingResponse> getShippingsByDateRange(LocalDate from, LocalDate to, Pageable pageable) {
-        return shippingRepository.findBySendDateBetween(from, to, pageable)
+    public PagedResponse<ShippingResponse> getShippingsByDateRange(LocalDate from, LocalDate to, Pageable pageable) {
+        Page<ShippingResponse> page = shippingRepository.findBySendDateBetween(from, to, pageable)
                 .map(shippingMapper::toResponse);
+        return PagedResponse.from(page);
     }
 
     @Override
     @Cacheable(value = "shippings-by-state", key = "#state.name() + '-' + #pageable.pageNumber + '-' + #pageable.pageSize")
-    public Page<ShippingResponse> getShippingsByState(ShippingState state, Pageable pageable) {
-        return shippingRepository.findByState(state, pageable)
+    public PagedResponse<ShippingResponse> getShippingsByState(ShippingState state, Pageable pageable) {
+        Page<ShippingResponse> page = shippingRepository.findByState(state, pageable)
                 .map(shippingMapper::toResponse);
+        return PagedResponse.from(page);
     }
 
     @Override

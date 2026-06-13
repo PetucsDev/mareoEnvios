@@ -2,10 +2,16 @@ package sube.interviews.mareoenvios.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Builder;
-import lombok.Value;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 
-@Value
+@Getter
+@Setter
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class CustomerRequest {
 
     @NotBlank(message = "First name is required")

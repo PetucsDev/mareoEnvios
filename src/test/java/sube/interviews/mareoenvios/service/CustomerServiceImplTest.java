@@ -13,6 +13,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import sube.interviews.mareoenvios.domain.Customer;
 import sube.interviews.mareoenvios.dto.response.CustomerResponse;
+import sube.interviews.mareoenvios.dto.response.PagedResponse;
 import sube.interviews.mareoenvios.exception.ResourceNotFoundException;
 import sube.interviews.mareoenvios.mapper.CustomerMapper;
 import sube.interviews.mareoenvios.repository.CustomerRepository;
@@ -90,9 +91,15 @@ class CustomerServiceImplTest {
         when(customerRepository.findAll(pageable)).thenReturn(customerPage);
         when(customerMapper.toResponse(customer)).thenReturn(customerResponse);
 
-        Page<CustomerResponse> results = customerService.getAllCustomers(pageable);
+        PagedResponse<CustomerResponse> results = customerService.getAllCustomers(pageable);
 
         assertThat(results.getContent()).hasSize(1).contains(customerResponse);
         assertThat(results.getTotalElements()).isEqualTo(1);
+        assertThat(results.getPageNumber()).isEqualTo(0);
+        assertThat(results.getPageSize()).isEqualTo(20);
+        assertThat(results.getTotalPages()).isEqualTo(1);
+        assertThat(results.isFirst()).isTrue();
+        assertThat(results.isLast()).isTrue();
+        assertThat(results.isEmpty()).isFalse();
     }
 }

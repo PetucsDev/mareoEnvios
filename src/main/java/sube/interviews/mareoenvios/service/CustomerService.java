@@ -1,8 +1,8 @@
 package sube.interviews.mareoenvios.service;
 
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import sube.interviews.mareoenvios.dto.response.CustomerResponse;
+import sube.interviews.mareoenvios.dto.response.PagedResponse;
 
 /**
  * Contrato público de la capa de servicio para Customer.
@@ -12,5 +12,5 @@ public interface CustomerService {
 
     CustomerResponse getCustomerById(Long id);
 
-    Page<CustomerResponse> getAllCustomers(Pageable pageable);
+    PagedResponse<CustomerResponse> getAllCustomers(Pageable pageable);
 }

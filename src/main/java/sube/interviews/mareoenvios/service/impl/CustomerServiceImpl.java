@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sube.interviews.mareoenvios.domain.Customer;
 import sube.interviews.mareoenvios.dto.response.CustomerResponse;
+import sube.interviews.mareoenvios.dto.response.PagedResponse;
 import sube.interviews.mareoenvios.mapper.CustomerMapper;
 import sube.interviews.mareoenvios.repository.CustomerRepository;
 import sube.interviews.mareoenvios.service.BaseService;
@@ -44,8 +45,9 @@ public class CustomerServiceImpl extends BaseService<Customer, Long> implements 
 
     @Override
     @Cacheable(value = "customers-all", key = "#pageable.pageNumber + '-' + #pageable.pageSize")
-    public Page<CustomerResponse> getAllCustomers(Pageable pageable) {
-        return customerRepository.findAll(pageable)
+    public PagedResponse<CustomerResponse> getAllCustomers(Pageable pageable) {
+        Page<CustomerResponse> page = customerRepository.findAll(pageable)
                 .map(customerMapper::toResponse);
+        return PagedResponse.from(page);
     }
 }

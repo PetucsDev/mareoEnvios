@@ -1,5 +1,7 @@
 package sube.interviews.mareoenvios.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -29,12 +31,26 @@ public class CacheConfig {
 
     @Bean
     public RedisCacheManager cacheManager(RedisConnectionFactory connectionFactory) {
+        // Configurar ObjectMapper con type information Y soporte para fechas
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
+        // Habilitar type information para preservar genéricos
+        objectMapper.activateDefaultTyping(
+            objectMapper.getPolymorphicTypeValidator(), 
+            ObjectMapper.DefaultTyping.NON_FINAL, 
+            com.fasterxml.jackson.annotation.JsonTypeInfo.As.PROPERTY
+        );
+        
+        // Crear serializer con ObjectMapper configurado
+        GenericJackson2JsonRedisSerializer jsonSerializer = 
+            new GenericJackson2JsonRedisSerializer(objectMapper);
+
         RedisCacheConfiguration defaultConfig = RedisCacheConfiguration.defaultCacheConfig()
                 .entryTtl(Duration.ofMinutes(10))
                 .serializeKeysWith(RedisSerializationContext.SerializationPair
                         .fromSerializer(new StringRedisSerializer()))
                 .serializeValuesWith(RedisSerializationContext.SerializationPair
-                        .fromSerializer(new GenericJackson2JsonRedisSerializer()));
+                        .fromSerializer(jsonSerializer));
 
         Map<String, RedisCacheConfiguration> cacheConfigs = Map.of(
                 "customers",          defaultConfig.entryTtl(Duration.ofMinutes(15)),

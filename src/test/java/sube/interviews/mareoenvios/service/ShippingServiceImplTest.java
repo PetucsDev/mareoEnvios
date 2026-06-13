@@ -16,6 +16,7 @@ import sube.interviews.mareoenvios.dto.request.CustomerRequest;
 import sube.interviews.mareoenvios.dto.request.ShippingCreateRequest;
 import sube.interviews.mareoenvios.dto.request.ShippingItemRequest;
 import sube.interviews.mareoenvios.dto.response.ShippingResponse;
+import sube.interviews.mareoenvios.dto.response.PagedResponse;
 import sube.interviews.mareoenvios.event.ShippingStateChangedEvent;
 import sube.interviews.mareoenvios.exception.BusinessException;
 import sube.interviews.mareoenvios.exception.InvalidStateTransitionException;
@@ -114,9 +115,12 @@ class ShippingServiceImplTest {
         when(shippingRepository.findBySendDateBetween(from, to, pageable)).thenReturn(page);
         when(shippingMapper.toResponse(shipping)).thenReturn(shippingResponse);
 
-        Page<ShippingResponse> result = shippingService.getShippingsByDateRange(from, to, pageable);
+        PagedResponse<ShippingResponse> result = shippingService.getShippingsByDateRange(from, to, pageable);
 
         assertThat(result.getContent()).hasSize(1);
+        assertThat(result.getTotalElements()).isEqualTo(1);
+        assertThat(result.getPageNumber()).isEqualTo(0);
+        assertThat(result.getPageSize()).isEqualTo(20);
         verify(shippingRepository).findBySendDateBetween(from, to, pageable);
     }
 
@@ -129,9 +133,11 @@ class ShippingServiceImplTest {
 
         when(shippingRepository.findBySendDateBetween(from, to, pageable)).thenReturn(Page.empty());
 
-        Page<ShippingResponse> result = shippingService.getShippingsByDateRange(from, to, pageable);
+        PagedResponse<ShippingResponse> result = shippingService.getShippingsByDateRange(from, to, pageable);
 
         assertThat(result.getContent()).isEmpty();
+        assertThat(result.getTotalElements()).isEqualTo(0);
+        assertThat(result.isEmpty()).isTrue();
     }
 
     // --- getShippingsByState ---
@@ -145,10 +151,12 @@ class ShippingServiceImplTest {
         when(shippingRepository.findByState(ShippingState.INITIAL, pageable)).thenReturn(page);
         when(shippingMapper.toResponse(shipping)).thenReturn(shippingResponse);
 
-        Page<ShippingResponse> result = shippingService.getShippingsByState(ShippingState.INITIAL, pageable);
+        PagedResponse<ShippingResponse> result = shippingService.getShippingsByState(ShippingState.INITIAL, pageable);
 
         assertThat(result.getContent()).hasSize(1);
         assertThat(result.getTotalElements()).isEqualTo(1);
+        assertThat(result.getPageNumber()).isEqualTo(0);
+        assertThat(result.getPageSize()).isEqualTo(20);
     }
 
     // --- transitionState ---

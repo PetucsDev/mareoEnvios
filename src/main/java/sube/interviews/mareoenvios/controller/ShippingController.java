@@ -4,7 +4,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -14,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import sube.interviews.mareoenvios.domain.ShippingState;
 import sube.interviews.mareoenvios.dto.request.ShippingCreateRequest;
 import sube.interviews.mareoenvios.dto.response.ShippingResponse;
+import sube.interviews.mareoenvios.dto.response.PagedResponse;
 import sube.interviews.mareoenvios.service.ShippingService;
 import sube.interviews.mareoenvios.service.ShippingWriteService;
 
@@ -42,7 +42,7 @@ public class ShippingController {
 
     @GetMapping("/info/{sendDateFrom}/{sendDateTo}")
     @Operation(summary = "Listado de envíos por rango de fecha de envío")
-    public ResponseEntity<Page<ShippingResponse>> getShippingsByDateRange(
+    public ResponseEntity<PagedResponse<ShippingResponse>> getShippingsByDateRange(
             @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate sendDateFrom,
             @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate sendDateTo,
             @PageableDefault(size = 20, sort = "sendDate") Pageable pageable) {
@@ -54,7 +54,7 @@ public class ShippingController {
     // cuando el valor es numérico). Se usa /shipping/info/state/{state} para evitar la ambigüedad.
     @GetMapping("/info/state/{state}")
     @Operation(summary = "Listado de envíos por estado")
-    public ResponseEntity<Page<ShippingResponse>> getShippingsByState(
+    public ResponseEntity<PagedResponse<ShippingResponse>> getShippingsByState(
             @PathVariable ShippingState state,
             @PageableDefault(size = 20, sort = "id") Pageable pageable) {
         return ResponseEntity.ok(shippingService.getShippingsByState(state, pageable));

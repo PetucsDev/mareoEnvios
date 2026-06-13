@@ -1,10 +1,14 @@
 package sube.interviews.mareoenvios.dto.response;
 
 import lombok.Builder;
-import lombok.Value;
+import lombok.Getter;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 
-@Value
+@Getter
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class CustomerResponse {
     Long id;
     String firstName;
