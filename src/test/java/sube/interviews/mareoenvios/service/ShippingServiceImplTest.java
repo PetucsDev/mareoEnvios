@@ -38,6 +38,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+import org.mockito.ArgumentCaptor;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("ShippingServiceImpl — tests unitarios")
@@ -311,5 +312,108 @@ class ShippingServiceImplTest {
         assertThatThrownBy(() -> shippingService.createShipping(request))
                 .isInstanceOf(BusinessException.class)
                 .hasMessageContaining("99");
+    }
+
+    // --- Edge Cases ---
+
+    @Test
+    @DisplayName("createShipping con múltiples items debe crear todos correctamente")
+    void createShipping_withMultipleItems_shouldCreateAll() {
+        Product product1 = Product.builder().id(1L).description("Product1").weight(1.0).build();
+        Product product2 = Product.builder().id(2L).description("Product2").weight(2.0).build();
+        Product product3 = Product.builder().id(3L).description("Product3").weight(3.0).build();
+
+        ShippingCreateRequest request = ShippingCreateRequest.builder()
+                .customerId(1L)
+                .sendDate(LocalDate.now())
+                .arriveDate(LocalDate.now().plusDays(5))
+                .priority(1)
+                .items(List.of(
+                        ShippingItemRequest.builder().productId(1L).quantity(2).build(),
+                        ShippingItemRequest.builder().productId(2L).quantity(3).build(),
+                        ShippingItemRequest.builder().productId(3L).quantity(1).build()
+                ))
+                .build();
+
+        when(customerRepository.findById(1L)).thenReturn(Optional.of(customer));
+        when(productRepository.findById(1L)).thenReturn(Optional.of(product1));
+        when(productRepository.findById(2L)).thenReturn(Optional.of(product2));
+        when(productRepository.findById(3L)).thenReturn(Optional.of(product3));
+        when(shippingRepository.save(any(Shipping.class))).thenAnswer(invocation -> {
+            Shipping s = invocation.getArgument(0);
+            s.setId(1L);
+            return s;
+        });
+        when(shippingMapper.toResponse(any())).thenReturn(shippingResponse);
+
+        ShippingResponse result = shippingService.createShipping(request);
+
+        assertThat(result).isNotNull();
+        verify(shippingRepository).save(any(Shipping.class));
+        
+        // Verify all items were added
+        ArgumentCaptor<Shipping> captor = ArgumentCaptor.forClass(Shipping.class);
+        verify(shippingRepository).save(captor.capture());
+        assertThat(captor.getValue().getItems()).hasSize(3);
+    }
+
+    @Test
+    @DisplayName("createShipping con arriveDate null debe ser válido")
+    void createShipping_withNullArriveDate_shouldBeValid() {
+        ShippingCreateRequest request = ShippingCreateRequest.builder()
+                .customerId(1L)
+                .sendDate(LocalDate.now())
+                .arriveDate(null) // Optional field
+                .priority(1)
+                .items(List.of(ShippingItemRequest.builder().productId(1L).quantity(1).build()))
+                .build();
+
+        when(customerRepository.findById(1L)).thenReturn(Optional.of(customer));
+        when(productRepository.findById(1L)).thenReturn(Optional.of(product));
+        when(shippingRepository.save(any(Shipping.class))).thenReturn(shipping);
+        when(shippingMapper.toResponse(any())).thenReturn(shippingResponse);
+
+        ShippingResponse result = shippingService.createShipping(request);
+
+        assertThat(result).isNotNull();
+        verify(shippingRepository).save(any(Shipping.class));
+    }
+
+    @Test
+    @DisplayName("getShippingsByDateRange con rango invertido debe retornar vacío")
+    void getShippingsByDateRange_withInvertedRange_shouldReturnEmpty() {
+        LocalDate from = LocalDate.of(2024, 1, 31);
+        LocalDate to = LocalDate.of(2024, 1, 1); // from > to
+        PageRequest pageable = PageRequest.of(0, 20);
+
+        when(shippingRepository.findBySendDateBetween(from, to, pageable))
+                .thenReturn(Page.empty());
+
+        PagedResponse<ShippingResponse> result = shippingService.getShippingsByDateRange(from, to, pageable);
+
+        assertThat(result.isEmpty()).isTrue();
+        verify(shippingRepository).findBySendDateBetween(from, to, pageable);
+    }
+
+    @Test
+    @DisplayName("transitionState debe propagar excepción de estrategia")
+    void transitionState_shouldPropagateStrategyException() {
+        Long shippingId = 1L;
+        Shipping shipping = Shipping.builder()
+                .id(shippingId)
+                .state(ShippingState.DELIVERED) // Final state
+                .build();
+
+        when(shippingRepository.findById(shippingId)).thenReturn(Optional.of(shipping));
+        
+        // Mock strategy to throw exception
+        ShippingStateStrategy strategy = mock(ShippingStateStrategy.class);
+        doThrow(new InvalidStateTransitionException(
+                "Cannot transition from DELIVERED to SENT_TO_MAIL"))
+                .when(strategy).apply(shipping);
+        when(strategyFactory.getStrategy(ShippingState.SENT_TO_MAIL)).thenReturn(strategy);
+
+        assertThatThrownBy(() -> shippingService.transitionState(shippingId, ShippingState.SENT_TO_MAIL))
+                .isInstanceOf(InvalidStateTransitionException.class);
     }
 }
