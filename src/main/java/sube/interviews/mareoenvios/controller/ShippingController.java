@@ -1,6 +1,8 @@
 package sube.interviews.mareoenvios.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -64,6 +66,11 @@ public class ShippingController {
 
     @PostMapping("/create")
     @Operation(summary = "Crear una nueva solicitud de envío")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Envío creado exitosamente"),
+            @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos o customer/producto no encontrado"),
+            @ApiResponse(responseCode = "422", description = "Error de validación de negocio")
+    })
     public ResponseEntity<ShippingResponse> createShipping(@RequestBody @Valid ShippingCreateRequest request) {
         log.info("Creating new shipping for customer ID: {} with {} items", 
                 request.getCustomerId() != null ? request.getCustomerId() : "new customer", 
@@ -79,24 +86,44 @@ public class ShippingController {
 
     @PatchMapping("/transition/sendToMail/{shippingId}")
     @Operation(summary = "Transición: Inicial → Entregado al correo")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Transición exitosa"),
+            @ApiResponse(responseCode = "404", description = "Envío no encontrado"),
+            @ApiResponse(responseCode = "422", description = "Transición de estado inválida")
+    })
     public ResponseEntity<ShippingResponse> sendToMail(@PathVariable Long shippingId) {
         return ResponseEntity.ok(shippingWriteService.transitionState(shippingId, ShippingState.SENT_TO_MAIL));
     }
 
     @PatchMapping("/transition/inTravel/{shippingId}")
     @Operation(summary = "Transición: Entregado al correo → En camino")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Transición exitosa"),
+            @ApiResponse(responseCode = "404", description = "Envío no encontrado"),
+            @ApiResponse(responseCode = "422", description = "Transición de estado inválida")
+    })
     public ResponseEntity<ShippingResponse> inTravel(@PathVariable Long shippingId) {
         return ResponseEntity.ok(shippingWriteService.transitionState(shippingId, ShippingState.IN_TRAVEL));
     }
 
     @PatchMapping("/transition/delivered/{shippingId}")
     @Operation(summary = "Transición: En camino → Entregado")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Transición exitosa"),
+            @ApiResponse(responseCode = "404", description = "Envío no encontrado"),
+            @ApiResponse(responseCode = "422", description = "Transición de estado inválida")
+    })
     public ResponseEntity<ShippingResponse> delivered(@PathVariable Long shippingId) {
         return ResponseEntity.ok(shippingWriteService.transitionState(shippingId, ShippingState.DELIVERED));
     }
 
     @PatchMapping("/transition/cancelled/{shippingId}")
     @Operation(summary = "Transición: Inicial/Entregado al correo → Cancelado")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Transición exitosa"),
+            @ApiResponse(responseCode = "404", description = "Envío no encontrado"),
+            @ApiResponse(responseCode = "422", description = "Transición de estado inválida")
+    })
     public ResponseEntity<ShippingResponse> cancelled(@PathVariable Long shippingId) {
         return ResponseEntity.ok(shippingWriteService.transitionState(shippingId, ShippingState.CANCELLED));
     }

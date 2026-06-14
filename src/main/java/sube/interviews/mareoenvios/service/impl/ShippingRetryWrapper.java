@@ -41,7 +41,7 @@ public class ShippingRetryWrapper implements ShippingWriteService {
             retryFor = {DataAccessException.class, RedisConnectionFailureException.class},
             noRetryFor = {BusinessException.class, ResourceNotFoundException.class, InvalidStateTransitionException.class},
             maxAttemptsExpression = "${spring.retry.max-attempts:3}",
-            backoff = @Backoff(delay = 500, multiplier = 2)
+            backoff = @Backoff(delay = 500, multiplier = 2, random = true)
     )
     public ShippingResponse createShipping(ShippingCreateRequest request) {
         return shippingWriteService.createShipping(request);
@@ -52,7 +52,7 @@ public class ShippingRetryWrapper implements ShippingWriteService {
             retryFor = {DataAccessException.class, RedisConnectionFailureException.class},
             noRetryFor = {BusinessException.class, ResourceNotFoundException.class, InvalidStateTransitionException.class},
             maxAttemptsExpression = "${spring.retry.max-attempts:3}",
-            backoff = @Backoff(delay = 500, multiplier = 2)
+            backoff = @Backoff(delay = 500, multiplier = 2, random = true)
     )
     public ShippingResponse transitionState(Long shippingId, ShippingState targetState) {
         return shippingWriteService.transitionState(shippingId, targetState);

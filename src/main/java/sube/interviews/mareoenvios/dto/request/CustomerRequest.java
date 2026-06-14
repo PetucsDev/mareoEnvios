@@ -23,7 +23,7 @@ public class CustomerRequest {
     @Size(min = 1, max = 255, message = "Last name must be between 1 and 255 characters")
     String lastName;
 
-    @Size(max = 500, message = "Address must not exceed 500 characters")
+    @Size(max = 255, message = "Address must not exceed 255 characters")
     String address;
 
     @Size(max = 255, message = "City must not exceed 255 characters")

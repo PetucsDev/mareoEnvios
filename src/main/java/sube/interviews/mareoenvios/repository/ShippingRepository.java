@@ -25,6 +25,7 @@ public interface ShippingRepository extends JpaRepository<Shipping, Long> {
     @Query(
         value = """
             SELECT s FROM Shipping s
+            LEFT JOIN FETCH s.customer
             LEFT JOIN FETCH s.items i
             LEFT JOIN FETCH i.product
             WHERE s.state = :state
@@ -36,6 +37,7 @@ public interface ShippingRepository extends JpaRepository<Shipping, Long> {
     @Query(
         value = """
             SELECT s FROM Shipping s
+            LEFT JOIN FETCH s.customer
             LEFT JOIN FETCH s.items i
             LEFT JOIN FETCH i.product
             WHERE s.sendDate BETWEEN :from AND :to

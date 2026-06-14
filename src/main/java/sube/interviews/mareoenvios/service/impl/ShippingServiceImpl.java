@@ -86,7 +86,7 @@ public class ShippingServiceImpl extends BaseService<Shipping, Long> implements 
 
     @Override
     @Transactional
-    @CacheEvict(value = {"shipping", "shippings-by-state", "shippings-by-date"}, allEntries = true)
+    @CacheEvict(value = {"shipping", "shippings-by-state", "shippings-by-date", "top-products"}, allEntries = true)
     public ShippingResponse createShipping(ShippingCreateRequest request) {
         Customer customer = resolveCustomer(request);
         List<ShippingItem> items = buildItems(request.getItems());
