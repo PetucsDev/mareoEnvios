@@ -53,9 +53,10 @@ public class ShippingController {
         return ResponseEntity.ok(shippingService.getShippingsByDateRange(sendDateFrom, sendDateTo, pageable));
     }
 
-    // Nota: la consigna define /shipping/info/{state}, pero colisiona con /shipping/info/{shippingId}
-    // (ambos son path variables de un solo segmento y Spring no puede distinguirlos en runtime
-    // cuando el valor es numérico). Se usa /shipping/info/state/{state} para evitar la ambigüedad.
+    // Nota: la consigna define /shipping/info/{state}, pero colisiona con /shipping/info/{shippingId}.
+    // Spring resuelve el handler por patrón de URL antes de conocer el tipo del parámetro, por lo que
+    // ambos mapeos son idénticos para el dispatcher ("/shipping/info/{variable}") y generan
+    // IllegalStateException al iniciar. Se agrega el segmento fijo /state/ para evitar la colisión.
     @GetMapping("/info/state/{state}")
     @Operation(summary = "Listado de envíos por estado")
     public ResponseEntity<PagedResponse<ShippingResponse>> getShippingsByState(
