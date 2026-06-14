@@ -16,7 +16,6 @@ import java.util.stream.Collectors;
  * Spring instancia este bean una sola vez (Singleton por defecto).
  * En el constructor recibe todas las implementaciones de ShippingStateStrategy
  * registradas como beans y las indexa por su estado destino en un Map inmutable.
- * De esta forma, resolver la estrategia correcta es O(1) sin ningún if/switch.
  */
 @Component
 public class ShippingStateStrategyFactory {

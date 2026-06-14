@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 import java.util.List;
 
 /**
- * Wrapper estable para Page<T> que resuelve problemas de serialización en Redis.
+ * Wrapper para Page<T> que resuelve problemas de serialización en Redis.
  * 
  * Spring Data recomienda usar PagedModel pero no está disponible en esta versión.
  * Este wrapper proporciona una estructura JSON estable y serializable.
@@ -29,7 +29,7 @@ public class PagedResponse<T> {
     private boolean empty;
     
     /**
-     * Convierte un Page<T> de Spring Data a PagedResponse<T> estable.
+     * Convierte un Page<T> de Spring Data a PagedResponse<T> .
      */
     public static <T> PagedResponse<T> from(org.springframework.data.domain.Page<T> page) {
         return PagedResponse.<T>builder()

@@ -12,8 +12,6 @@ import java.util.List;
 /**
  * Repositorio de reportes. Usa ShippingItem como raíz ya que las consultas
  * de agregación parten de esa entidad hacia Product.
- * Las operaciones CRUD estándar de ShippingItem no se exponen intencionalmente
- * (los items se gestionan en cascada desde Shipping).
  */
 @Repository
 public interface ReportRepository extends JpaRepository<ShippingItem, Long> {

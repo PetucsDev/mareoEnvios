@@ -8,10 +8,10 @@ import sube.interviews.mareoenvios.dto.response.PagedResponse;
 import java.time.LocalDate;
 
 /**
- * Contrato de solo lectura para la capa de servicio de Shipping.
+ * Contrato de solo lectura para la capa de service de Shipping.
  *
  * Las operaciones de escritura (createShipping, transitionState) viven en
- * {@link ShippingWriteService}, siguiendo el principio de segregación de interfaces (ISP).
+ * {@link ShippingWriteService}.
  */
 public interface ShippingService {
 

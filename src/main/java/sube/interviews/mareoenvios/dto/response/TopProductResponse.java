@@ -6,10 +6,6 @@ import lombok.Value;
 
 /**
  * DTO para el reporte de productos más solicitados.
- *
- * Se instancia desde una JPQL constructor expression en ShippingRepository.
- * @JsonCreator + @JsonProperty permiten que Jackson (y por ende Redis/GenericJackson2JsonRedisSerializer)
- * pueda deserializar correctamente la clase inmutable generada por @Value.
  */
 @Value
 public class TopProductResponse {

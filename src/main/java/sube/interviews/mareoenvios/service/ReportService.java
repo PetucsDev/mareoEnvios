@@ -5,7 +5,7 @@ import sube.interviews.mareoenvios.dto.response.TopProductResponse;
 import java.util.List;
 
 /**
- * Contrato público de la capa de servicio para reportes.
+ * Contrato público de la capa de service para reportes.
  */
 public interface ReportService {
 

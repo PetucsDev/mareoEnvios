@@ -6,7 +6,7 @@ import sube.interviews.mareoenvios.exception.ResourceNotFoundException;
 /**
  * Template Method pattern.
  *
- * Define el flujo genérico de operaciones CRUD.
+ * Define el flujo genérico para el CRUD.
  * Las subclases concretas inyectan su propio repositorio y pueden
  * sobreescribir los hooks validateBeforeSave / validateBeforeDelete
  * para agregar validaciones específicas sin repetir la lógica base.

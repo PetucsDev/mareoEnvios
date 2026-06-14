@@ -7,9 +7,7 @@ import sube.interviews.mareoenvios.dto.response.ShippingResponse;
 /**
  * Contrato para las operaciones de escritura de Shipping.
  *
- * Separado de {@link ShippingService} (lectura) para aplicar el
- * principio de segregación de interfaces (ISP): el RetryWrapper
- * solo necesita conocer las operaciones que reintenta, no las de consulta.
+ * Separado de {@link ShippingService} (lectura).
  */
 public interface ShippingWriteService {
 

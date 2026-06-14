@@ -5,8 +5,8 @@ import sube.interviews.mareoenvios.dto.response.CustomerResponse;
 import sube.interviews.mareoenvios.dto.response.PagedResponse;
 
 /**
- * Contrato público de la capa de servicio para Customer.
- * El controlador depende de esta interfaz, nunca de la implementación concreta.
+ * Contrato público de la capa de service para Customer.
+ * El controller depende de esta interface, nunca de la implementación concreta.
  */
 public interface CustomerService {
 
